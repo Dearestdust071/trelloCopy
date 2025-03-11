@@ -1,11 +1,19 @@
-<p-button label="check"></p-button>
-<i class="pi pi-check"></i>
-<i class="pi pi-times"></i>
-<span class="pi pi-search"></span>
-<span class="pi pi-user"></span>
+<app-board>
+  <app-panel title="Tareas Nuevas" color="bg-green-400">
+    <app-activity>
+      <p slot="responsible">Juan Pérez</p>
+    </app-activity>
+  </app-panel>
 
-<div class="bg-blue-500 text-white p-4 rounded-lg shadow-lg">
-  ¡Si ves esto con fondo azul y texto blanco, Tailwind está funcionando!
-</div>
+  <app-panel title="En Desarrollo" color="bg-yellow-400">
+    <app-activity>
+      <p slot="responsible">Ana García</p>
+    </app-activity>
+  </app-panel>
 
-<router-outlet />
+  <app-panel title="Completadas" color="bg-blue-400">
+    <app-activity>
+      <p slot="responsible">Carlos López</p>
+    </app-activity>
+  </app-panel>
+</app-board>
