@@ -9,13 +9,12 @@ export const appConfig: ApplicationConfig = {
 
 
   providers: [
-    provideZoneChangeDetection({ eventCoalescing: true }), 
-    
-    
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideAnimationsAsync(),
     providePrimeNG({
       theme: {
         preset: Aura,
-        options: {  
+        options: {
           darkModeSelector: '.dark',
           cssLayer: {
             name: 'primeng',
