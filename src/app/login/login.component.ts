@@ -16,7 +16,11 @@ import { AutoFocusModule } from 'primeng/autofocus';
 export class LoginComponent {
   username: string = '';
 
-  constructor(private ws: WebsocketsService, private router: Router, private messageService: MessageService) { }
+  constructor(private ws: WebsocketsService, private router: Router, private messageService: MessageService) {
+    this.ws.CloseConn()
+    localStorage.removeItem("token_Trello")
+    this.router.navigate(['/login'])
+   }
 
   onSubmit() {
     if (this.username.trim()) {

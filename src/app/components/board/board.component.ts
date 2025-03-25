@@ -28,32 +28,29 @@ interface Board {
   title: string;
   tracks: Track[];
 }
-
-
 // Interface general para el modelo de entrada
 export interface EntryModel {
   Action_Type: string;
-  Message: UsuariosMessage | ActividadesMessage | RemoveMessage;
+  Message: UsuariosMessage | ActividadMessage[] | RemoveMessage;
 }
 
-// Interface para el caso cuando el Action_Type es "Usuarios"
+// Interface cuando Action_Type es "Usuarios"
 export interface UsuariosMessage {
   nombres: string[]; // Lista de nombres de los usuarios, puede ser null o estar ausente
 }
 
+// Interface cuando Action_Type es "Eliminar Usuario"
 export interface RemoveMessage {
   usuario_eliminado: string;
 }
 
-
-// Interface para el caso cuando el Action_Type es "Actividades"
-export interface ActividadesMessage {
-  nombre: string;         // Nombre de la actividad
-  fecha_creacion: string; // Fecha de creación de la actividad
-  estado: string;         // Estado de la actividad
-  responsables: string[]; // Lista de responsables, puede ser null o estar ausente
+// Interface para actividades individuales
+export interface ActividadMessage {
+  nombre?: string;         // Nombre de la actividad
+  fecha_creacion?: string; // Fecha de creación de la actividad
+  estado?: string;         // Estado de la actividad
+  responsables?: string[]; // Lista de responsables, puede ser null o estar ausente
 }
-
 
 
 
@@ -73,7 +70,6 @@ export interface ActividadesMessage {
     FormsModule,
     ReactiveFormsModule,
     MultiSelectModule,
-    JsonPipe,
     CardModule
   ],
   templateUrl: './board.component.html',
@@ -85,7 +81,8 @@ export class BoardComponent {
   items: MenuItem[] | undefined;
   boards: Board[] = []
   users: string[] = [];
-  actividades: ActividadesMessage[] = [];
+  actividades: ActividadMessage[] = [];
+
   nombreUsuario: any;
   visible = false;
   Formulario: FormGroup;
@@ -96,7 +93,7 @@ export class BoardComponent {
     { label: "Completado", value: "Completado" }
   ]
 
-  constructor(private msg: MessageService, private ws: WebsocketsService, private fb: FormBuilder, private cdr: ChangeDetectorRef) {
+  constructor(private msg: MessageService, private ws: WebsocketsService, private fb: FormBuilder, private cdr: ChangeDetectorRef,) {
     console.log("Entro en el construcotr");
     this.nombreUsuario = localStorage.getItem("token_Trello");
 
@@ -106,24 +103,26 @@ export class BoardComponent {
       estado: ['', Validators.required],
       responsables: [, Validators.required]
     })
+    this.ListenUsers();  
+    this.ListenRemove();
+    this.ListenActividades();
   }
 
-  async ngAfterViewInit() {
-    setTimeout(() => {
-      this.msg.add({
-        severity: 'success',
-        summary: 'Conectado!',
-        detail: `${this.nombreUsuario}, se conectó al servidor websocket!`,
-        life: 3000
-      });
-      this.ListenUsers();
-      this.ListenRemove();
-      this.ListenActividades();
 
-      console.log("Cargaron los componentes?");
-    }, 0); // Esto asegura que el mensaje se muestre después de que la vista se haya cargado completamente
+  cambiarEstado(actividad:ActividadMessage ){
+    this.ws.Emit(actividad.toString());
   }
+async ngAfterViewInit() {
+  this.msg.add({
+    severity: 'success',
+    summary: 'Conectado!',
+    detail: `${this.nombreUsuario}, se conectó al servidor websocket!`,
+    life: 3000
+  });
 
+
+  console.log("Cargaron los componentes?");
+}
 
 
 
@@ -170,6 +169,7 @@ export class BoardComponent {
       detail: 'La actividad se agrego al board con exito'
     });
 
+    this.visible = false;
   }
 
   ListenUsers() {
@@ -205,13 +205,14 @@ export class BoardComponent {
     });
   }
 
-
-
   ListenActividades() {
-    this.ws.Listen('Actividades').subscribe((msg: ActividadesMessage) => {
-      this.actividades.push(msg);
-      this.cdr.detectChanges();
-    });
-  }
+  this.ws.Listen('Actividades').subscribe((msg: ActividadMessage[]) => {
+    this.actividades = msg;
+    console.log("Desde listen actividades: ", msg);
+    this.ngOnInit();
+    this.cdr.detectChanges();
+  });
+}
+
 
 }

@@ -53,7 +53,7 @@
         </div>
 
         <div class="flex flex-col gap-2">
-            <label for="fecha" class="font-semibold">Fecha Creación</label>
+            <label for="fecha" class="font-semibold">Fecha de entrega</label>
             <p-date-picker formControlName="fecha_creacion" [showButtonBar]="true" class="w-full" />
         </div>
 
@@ -83,14 +83,18 @@
 
 
 
-      <h4>{{
-        actividades | json
-        }}</h4>
 
 <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
     <p-card *ngFor="let actividad of actividades" class="shadow-lg rounded-lg border">
         <ng-template pTemplate="header">
-            <div class="flex justify-between items-center bg-blue-500 text-white p-4 rounded-t-lg">
+            <div
+                class="flex justify-between items-center text-white p-4 rounded-t-lg"
+                [ngClass]="{
+                    'bg-yellow-500': actividad.estado === 'Iniciado',
+                    'bg-blue-500': actividad.estado === 'En desarrollo',
+                    'bg-green-500': actividad.estado === 'Completado'
+                }"
+            >
                 <h2 class="text-lg font-semibold">{{ actividad.nombre }}</h2>
                 <span class="text-sm font-medium">{{ actividad.estado }}</span>
             </div>
@@ -98,7 +102,7 @@
 
         <ng-template pTemplate="content">
             <div class="p-4">
-                <p class="text-sm text-gray-600">Fecha de creación:</p>
+                <p class="text-sm text-gray-600">Fecha de entrega:</p>
                 <p class="font-semibold">{{ actividad.fecha_creacion | date:'longDate' }}</p>
 
                 <p class="mt-3 text-sm text-gray-600">Responsables:</p>
@@ -109,14 +113,17 @@
         </ng-template>
 
         <ng-template pTemplate="footer">
-            <div class="p-4 flex justify-end gap-2 border-t">
-                <p-button label="Editar" icon="pi pi-pencil" class="p-button-sm p-button-text"></p-button>
-                <p-button label="Eliminar" icon="pi pi-trash" class="p-button-sm p-button-danger"></p-button>
+            <div class="p-4 flex justify-end border-t">
+                <p-dropdown
+                    [options]="estados"
+                    [(ngModel)]="actividad.estado"
+                    (onChange)="cambiarEstado(actividad)"
+                    placeholder="Seleccionar estado"
+                ></p-dropdown>
             </div>
         </ng-template>
     </p-card>
 </div>
-
 
 
 

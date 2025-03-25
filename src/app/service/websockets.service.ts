@@ -6,21 +6,30 @@ import { Observable, Subject } from 'rxjs';
 // Interface general para el modelo de entrada
 export interface EntryModel {
   Action_Type: string;
-  Message: UsuariosMessage | ActividadesMessage | RemoveMessage;
+  Message: UsuariosMessage | ActividadMessage[] | RemoveMessage;
 }
 
-// Interface para el caso cuando el Action_Type es "Usuarios"
+// Interface cuando Action_Type es "Usuarios"
 export interface UsuariosMessage {
-  nombres?: string[]; // Lista de nombres de los usuarios, puede ser null o estar ausente
+  nombres: string[]; // Lista de nombres de los usuarios, puede ser null o estar ausente
 }
 
+// Interface cuando Action_Type es "Eliminar Usuario"
 export interface RemoveMessage {
   usuario_eliminado: string;
 }
 
+// Interface para actividades individuales
+export interface ActividadMessage {
+  nombre?: string;         // Nombre de la actividad
+  fecha_creacion?: string; // Fecha de creación de la actividad
+  estado?: string;         // Estado de la actividad
+  responsables?: string[]; // Lista de responsables, puede ser null o estar ausente
+}
+
 
 // Interface para el caso cuando el Action_Type es "Actividades"
-export interface ActividadesMessage {
+export interface ActividadMessage {
   nombre?: string;         // Nombre de la actividad
   fecha_creacion?: string; // Fecha de creación de la actividad
   estado?: string;         // Estado de la actividad
@@ -37,11 +46,15 @@ export class WebsocketsService {
   public observableWS: Subject<EntryModel> = new Subject<EntryModel>();
 
   constructor(@Inject(PLATFORM_ID) private platform_id: Object, private router: Router,
-  ) { }
+  ) { 
+    localStorage.removeItem("token_Trello")
+    this.router.navigate(['/login'])
+  }
 
   public Connect(usuario: string) {
     if (isPlatformBrowser(this.platform_id)) {
       this.socket = new WebSocket(`ws://localhost:9001/${usuario}`);
+
 
       this.socketOpenPromise = new Promise<void>((resolve, reject) => {
         this.socket.onopen = () => {
@@ -51,6 +64,8 @@ export class WebsocketsService {
 
         this.socket.onerror = (event) => {
           console.error('Error de conexión:', event);
+          localStorage.removeItem("token_Trello")
+          this.router.navigate(['/login'])
           reject(event);
         };
 
@@ -86,11 +101,13 @@ export class WebsocketsService {
 
   public async CloseConn() {
     try {
-      await this.socketOpenPromise;
+      localStorage.removeItem("token_Trello")
+      this.router.navigate(["/login"])
+      await this.socketOpenPromise
       this.socket.close();
     }
     catch (error) {
-      console.log("Error al cerrar la conexion con el ws [WebSocket.service.ts]")
+      console.log( error +"Error al cerrar la conexion con el ws [WebSocket.service.ts]")
     }
   }
 
