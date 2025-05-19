@@ -90,7 +90,7 @@ export class WebsocketsService {
     }
   }
 
-  public async Emit(content: string) {
+  public async Emit(content: any) {
     try {
       await this.socketOpenPromise;
       this.socket.send(JSON.stringify(content));

@@ -15,6 +15,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 interface Talk {
   text: string;
 }
@@ -81,11 +82,14 @@ export class BoardComponent {
   items: MenuItem[] | undefined;
   boards: Board[] = []
   users: string[] = [];
-  actividades: ActividadMessage[] = [];
 
+  actividades: ActividadMessage[] = [];
+  usersDropDown:any = [];
   nombreUsuario: any;
   visible = false;
   Formulario: FormGroup;
+
+
 
   estados = [
     { label: "Iniciado", value: "Iniciado" },
@@ -93,7 +97,14 @@ export class BoardComponent {
     { label: "Completado", value: "Completado" }
   ]
 
-  constructor(private msg: MessageService, private ws: WebsocketsService, private fb: FormBuilder, private cdr: ChangeDetectorRef,) {
+  // estados = [
+  //   { label: "Iniciado", value: "Iniciado" },
+  //   { label: "En desarrollo", value: "En desarrollo" },
+  //   { label: "Completado", value: "Completado" }
+  // ]
+
+
+  constructor(private msg: MessageService, private ws: WebsocketsService, private fb: FormBuilder, private cdr: ChangeDetectorRef, private router: Router) {
     console.log("Entro en el construcotr");
     this.nombreUsuario = localStorage.getItem("token_Trello");
 
@@ -109,9 +120,22 @@ export class BoardComponent {
   }
 
 
-  cambiarEstado(actividad:ActividadMessage ){
-    this.ws.Emit(actividad.toString());
+  cambiarEstado(actividad: ActividadMessage) {
+    var x = {
+      Estado : actividad.estado,
+      fecha_creacion : actividad.fecha_creacion,
+      nombre : actividad.nombre,
+      responsables : actividad.responsables,
+    }
+
+    this.ws.Emit(x); // Enviar como string válido
+    console.log("Actividad: " + actividad);
+  
+    this.router.navigateByUrl('/board', { skipLocationChange: true }).then(() => {
+      this.router.navigate(['board']);
+    }); 
   }
+  
 async ngAfterViewInit() {
   this.msg.add({
     severity: 'success',
@@ -127,6 +151,10 @@ async ngAfterViewInit() {
 
 
   ngOnInit() {
+
+
+  
+
     this.items = [{
       label: 'Salir',
       icon: 'pi pi-sign-out',
@@ -161,6 +189,10 @@ async ngAfterViewInit() {
       });
       return
     }
+    this.Formulario.value.responsables.map((dato:any) => {
+      return dato.nombre
+    })
+    console.log("Responsables" + this.Formulario.value.responsables)
     this.ws.Emit(this.Formulario.value)
 
     this.msg.add({
@@ -168,13 +200,20 @@ async ngAfterViewInit() {
       summary: 'Actividad agregada',
       detail: 'La actividad se agrego al board con exito'
     });
-
+    
     this.visible = false;
   }
 
   ListenUsers() {
     this.ws.Listen('Usuarios').subscribe((msg: UsuariosMessage) => {
       this.users = msg.nombres
+      console.log(this.usersDropDown);
+      // this.usersDropDown = msg.nombres.map((dato) => {
+      //   return {
+      //     label: dato,
+      //   };
+      // });
+      this.usersDropDown = msg.nombres;
       console.log("Desde el listen users: " + msg.nombres);
       this.cdr.detectChanges();
     })
@@ -211,6 +250,7 @@ async ngAfterViewInit() {
     console.log("Desde listen actividades: ", msg);
     this.ngOnInit();
     this.cdr.detectChanges();
+
   });
 }
 
