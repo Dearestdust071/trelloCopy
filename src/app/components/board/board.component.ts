@@ -91,6 +91,8 @@ export class BoardComponent {
 
 
 
+  minDate:Date;
+
   estados = [
     { label: "Iniciado", value: "Iniciado" },
     { label: "En desarrollo", value: "En desarrollo" },
@@ -105,6 +107,11 @@ export class BoardComponent {
 
 
   constructor(private msg: MessageService, private ws: WebsocketsService, private fb: FormBuilder, private cdr: ChangeDetectorRef, private router: Router) {
+
+    this.minDate = new Date();
+
+
+
     console.log("Entro en el construcotr");
     this.nombreUsuario = localStorage.getItem("token_Trello");
 

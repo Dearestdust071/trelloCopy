@@ -54,7 +54,7 @@
 
         <div class="flex flex-col gap-2">
             <label for="fecha" class="font-semibold">Fecha de entrega</label>
-            <p-date-picker formControlName="fecha_creacion" [showButtonBar]="true" class="w-full" />
+            <p-date-picker formControlName="fecha_creacion" [minDate]="this.minDate" [showButtonBar]="true" class="w-full" />
         </div>
 
         <div class="flex flex-col gap-2">
